@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SQLIN</title>
+	<style>
+		body, html {
+			padding:15px;
+			margin:0;
+		}
+		
+		button {
+			background-color:#1565c0;
+			padding:8px 20px 8px 20px;
+			color:white;
+			border:0;
+			border-radius:7px;
+			cursor:pointer;
+			FONT-WEIGHT:700;
+			font-size:11px;
+		}
+		button:hover {
+			background-color:#1976d2;
+		}
+		textarea {
+			border: 1px solid #bbb;
+			border-radius:7px;
+			padding:1%;
+			width:98%;
+			height:750px;
+			background:#fefefe;
+			-moz-box-shadow:    inset 0 0 10px #bbb;
+           -webkit-box-shadow: inset 0 0 10px #bbb;
+           box-shadow:         inset 0 0 10px #bbb;
+		}
+        textarea::-webkit-input-placeholder {
+            font-size: 30px;
+        }
+	</style>
+</head>
+<body>
+	<div style="float:left;width:49%;height:40px">
+		<button id="leftcopybtn" style="vertical-align:top;">COPY</button>
+        <div id='itemCount' style="float:right;margin-top:5px;"></div>
+	</div>
+	<div style="float:right;width:49%;height:40px">
+		<button id="copybtn" style="vertical-align:top;">COPY</button>
+		<button id="togglebtn" style="vertical-align:top;">TOGGLE QUOTES</button>
+		<button id="toggleInBracketsBtn" style="vertical-align:top;">TOGGLE IN()</button>
+        <label style="float:right"><input type="checkbox" id="trimSpecialCharacters"/>Trim special characters</label>
+	</div>
+	<div style="float:left;width:49%;">
+		<textarea id='tarea' placeholder="Paste excel column here..." autofocus></textarea>
+	</div>
+	<div style="float:right;width:49%;">
+		<textarea id='result' placeholder="Example: IN ('foo','bar') or paste IN statement..."></textarea>
+	</div>
+	<div style="clear:both"></div>
+	<input type='hidden' id='type' value='digits'/>
+    <input type='hidden' id='inBrackets' value='yes'/>
+    <script src="s.js"></script>
+</body>
+</html>
