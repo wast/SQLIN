@@ -1,35 +1,32 @@
-createCopyButtonEvent();
-createLeftCopyButtonEvent();
+"use strict";
+
+createCopyResultButtonEvent();
+createCopySourceButtonEvent();
 createToggleQuotesButtonEvent();
 createTrimSpecialCharactersEvent();
 createToggleInBracketsButtonEvent();
+createListenerCreateColumngStringDelayed();
+createListenerCreateModifiedStringDelayed();
 
-tarea = document.getElementById('tarea');
-tarea.addEventListener("paste", createModifiedStringDelayed);
-tarea.addEventListener("keyup", function(e){
-    if (e.keyCode == 13) {
-        createModifiedStringDelayed();
-    }
-});
-
-document.getElementById('result').addEventListener("paste", createColumnStringDelayed);
-
+let eventType = '';
 
 function createModifiedString(type){
-    resultString = '';
+    let itemCount = 0;
+    let resultString = '';
     type = type || 'none';
-    tareaValue = document.getElementById('tarea').value;
-    resultDiv = document.getElementById('result');
-    tareaArray = tareaValue.split('\n');
-    document.getElementById('itemCount').innerHTML = "Count: " + tareaArray.length;   
+    const tareaValue = document.getElementById('tarea').value;
+    let resultTextarea = document.getElementById('result');
+    let tareaArray = tareaValue.split('\n'); 
+    tareaArray = [...new Set(tareaArray)];
     if(type == 'none'){
         type = getInputType(tareaArray[0]);
     }
     document.getElementById('type').value = type;
     if(inBrackets()) resultString = 'IN (\n';
-    for(i = 0; i < tareaArray.length; i++){
+    for(let i = 0; i < tareaArray.length; i++){
         tareaArray[i] = tareaArray[i].trim();
         if(tareaArray[i] == '') continue;
+        itemCount++;
         if(trimSpecialCharacters()){
             tareaArray[i] = tareaArray[i].replace(/^\W+/g,"");
             tareaArray[i] = tareaArray[i].replace(/\W+$/g,"");
@@ -42,7 +39,9 @@ function createModifiedString(type){
     }
     resultString = resultString.slice(0, -1);
     if(inBrackets()) resultString += '\n)';
-    resultDiv.value = resultString;
+    resultTextarea.value = resultString;
+    document.getElementById('itemCount').innerHTML = "Count: " + itemCount;  
+    if(eventType === 'paste') resultTextarea.select();
 }
 
 function createModifiedStringDelayed(){
@@ -58,111 +57,104 @@ function createColumnStringDelayed(){
 }
 
 function createColumnString(){
-    columnString = '';
-    tareaValue = document.getElementById('tarea');
-    resultDiv = document.getElementById('result').value;
+    let columnString = '';
+    const tarea = document.getElementById('tarea');
+    let resultDiv = document.getElementById('result').value;
     if(resultDiv.indexOf(',') === -1) return false;
     resultDiv = resultDiv.trim();
     resultDiv = resultDiv.replace(/^IN.*\(/,"");
     resultDiv = resultDiv.replace(/\)$/,"");
-    resultArray = resultDiv.split(',');
+    let resultArray = resultDiv.split(',');
     document.getElementById('itemCount').innerHTML = "Count: " + resultArray.length;
-    for(i = 0; i < resultArray.length; i++){
+    for(let i = 0; i < resultArray.length; i++){
         resultArray[i] = resultArray[i].trim();
         resultArray[i] = resultArray[i].replace(/^\'/,"");
         resultArray[i] = resultArray[i].replace(/\'$/,"");
         columnString += (resultArray[i] + '\n');
     }
     columnString = columnString.replace(/\n$/,"");
-    tareaValue.value = columnString;
+    tarea.value = columnString;
+    tarea.select();
+}
+
+function createCopyResultButtonEvent(){
+    createCopyEventOnButton('#result','#copybtn');
+}
+function createCopySourceButtonEvent(){
+    createCopyEventOnButton('#tarea','#leftcopybtn');
 }
 
 function createToggleQuotesButtonEvent(){
-    var togglebtn = document.querySelector('#togglebtn');
-    togglebtn.addEventListener('click', function(event) {
-        newType = document.getElementById('type').value == 'digits' ? 'string' : 'digits';
+    let togglebtn = document.querySelector('#togglebtn');
+    togglebtn.addEventListener('click', function() {
+        const newType = document.getElementById('type').value == 'digits' ? 'string' : 'digits';
         createModifiedString(newType);
     });
 }
 
 function createTrimSpecialCharactersEvent(){
-    var toggleCheckbox = document.querySelector('#trimSpecialCharacters');
-    toggleCheckbox.addEventListener('click', function(event) {
+    let toggleCheckbox = document.querySelector('#trimSpecialCharacters');
+    toggleCheckbox.addEventListener('click', function() {
         createModifiedString();
     });
 }
 
 function createToggleInBracketsButtonEvent(){
-    var togglebtn = document.querySelector('#toggleInBracketsBtn');
-    togglebtn.addEventListener('click', function(event) {
-        var inBrackets = document.getElementById('inBrackets').value;
+    let togglebtn = document.querySelector('#toggleInBracketsBtn');
+    togglebtn.addEventListener('click', function() {
+        let inBrackets = document.getElementById('inBrackets').value;
         document.getElementById('inBrackets').value = (inBrackets == 'yes') ? 'no' : 'yes';
         createModifiedString();
     });
 }
 
-function doCopy(textareaSelector,btnSelector){
-    var copyTextareaBtn = document.querySelector(btnSelector);
-    copyTextareaBtn.addEventListener('click', function(event) {
-        var copyTextarea = document.querySelector(textareaSelector);
-        copyTextarea.select();
-        try {
-            var successful = document.execCommand('copy');
-            if(successful){
-                copyTextareaBtn.innerHTML = 'Copied !';
-                setTimeout(function(){
-                    copyTextareaBtn.innerHTML = 'COPY';
-                }, 2000);
-            }
-            console.log('Copying text command');
-        } catch (err) {
-            console.log('Oops, unable to copy');
+function createCopyEventOnButton(textareaSelector,btnSelector){
+    let copyTextarea = document.querySelector(textareaSelector);
+    let copyTextareaBtn = document.querySelector(btnSelector);
+    copyTextareaBtn.addEventListener('click', function() {
+        doCopy(copyTextarea,copyTextareaBtn);
+    });
+}
+
+function createListenerCreateColumngStringDelayed(){
+    const tarea = document.getElementById('result');
+    tarea.addEventListener("paste", createColumnStringDelayed);
+    tarea.addEventListener("keyup", function(e){
+        if (e.keyCode == 13) {
+            createColumnStringDelayed();
         }
     });
 }
 
-function createCopyButtonEvent(){
-    doCopy('#result','#copybtn');
-    
-    // var copyTextareaBtn = document.querySelector('#copybtn');
-    // copyTextareaBtn.addEventListener('click', function(event) {
-      // var copyTextarea = document.querySelector('#result');
-      // copyTextarea.select();
-      // try {
-        // var successful = document.execCommand('copy');
-        // if(successful){
-            // copyTextareaBtn.innerHTML = 'Copied !';
-            // setTimeout(function(){
-                // copyTextareaBtn.innerHTML = 'COPY';
-            // }, 2000);
-        // }
-        // console.log('Copying text command');
-      // } catch (err) {
-        // console.log('Oops, unable to copy');
-      // }
-    // });
+function createListenerCreateModifiedStringDelayed(){
+    const tarea = document.getElementById('tarea');
+    tarea.addEventListener("paste", function(e){
+        eventType = e.type;
+        createModifiedStringDelayed();
+    });
+    tarea.addEventListener("keyup", function(e){
+        if (e.keyCode == 13) {
+            eventType = '';
+            createModifiedStringDelayed();
+        }
+    });
 }
 
-function createLeftCopyButtonEvent(){
-    doCopy('#tarea','#leftcopybtn');
-    
-    // var copyTextareaBtn = document.querySelector('#leftcopybtn');
-    // copyTextareaBtn.addEventListener('click', function(event) {
-      // var copyTextarea = document.querySelector('#tarea');
-      // copyTextarea.select();
-      // try {
-        // var successful = document.execCommand('copy');
-        // if(successful){
-            // copyTextareaBtn.innerHTML = 'Copied !';
-            // setTimeout(function(){
-                // copyTextareaBtn.innerHTML = 'COPY';
-            // }, 2000);
-        // }
-        // console.log('Copying text command');
-      // } catch (err) {
-        // console.log('Oops, unable to copy');
-      // }
-    // });
+function doCopy(copyTextarea,copyTextareaBtn){
+    copyTextarea.select();
+    try {
+        let successful = document.execCommand('copy');
+        if(successful){
+            copyTextareaBtn.innerHTML = 'Copied !';
+            setTimeout(function(){
+                copyTextareaBtn.innerHTML = 'COPY';
+            }, 2000);
+        }
+        console.log('Copying text command');
+    } catch (err) {
+        console.log('Oops, unable to copy');
+        alert('Oops, unable to copy');
+    }
 }
 
 function getInputType(input){
