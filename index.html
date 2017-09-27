@@ -14,7 +14,7 @@
 			padding:8px 20px 8px 20px;
 			color:white;
 			border:0;
-			border-radius:7px;
+			border-radius:3px;
 			cursor:pointer;
 			FONT-WEIGHT:700;
 			font-size:11px;
@@ -24,17 +24,26 @@
 		}
 		textarea {
 			border: 1px solid #bbb;
-			border-radius:7px;
+			border-radius:3px;
 			padding:1%;
 			width:98%;
-			height:750px;
+			height:450px;
 			background:#fefefe;
 			-moz-box-shadow:    inset 0 0 10px #bbb;
-           -webkit-box-shadow: inset 0 0 10px #bbb;
-           box-shadow:         inset 0 0 10px #bbb;
+            -webkit-box-shadow: inset 0 0 10px #bbb;
+            box-shadow:         inset 0 0 10px #bbb;
 		}
         textarea::-webkit-input-placeholder {
-            font-size: 30px;
+            font-size: 22px;
+        }
+        textarea:-moz-placeholder {
+            font-size: 22px;
+        }
+        textarea::-moz-placeholder {
+            font-size: 22px;
+        }
+        textarea:-ms-input-placeholder {
+            font-size: 22px;
         }
 	</style>
 </head>
@@ -56,6 +65,7 @@
 		<textarea id='result' placeholder="Example: IN ('foo','bar') or paste IN statement..."></textarea>
 	</div>
 	<div style="clear:both"></div>
+    <a style="float:right;color:gray" href="mailto:s.majdak@vipnet.hr">Feedback</a>
 	<input type='hidden' id='type' value='digits'/>
     <input type='hidden' id='inBrackets' value='yes'/>
     <script src="s.js"></script>
