@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SQLIN</title>
+	<style>
+		body, html {
+			padding:15px;
+			margin:0;
+		}
+		
+		button {
+			background-color:#1565c0;
+			padding:8px 20px 8px 20px;
+			color:white;
+			border:0;
+			border-radius:7px;
+			cursor:pointer;
+			FONT-WEIGHT:700;
+			font-size:11px;
+		}
+		button:hover {
+			background-color:#1976d2;
+		}
+		textarea {
+			border: 1px solid #bbb;
+			border-radius:7px;
+			padding:1%;
+			width:98%;
+			height:750px;
+			background:#fefefe;
+			-moz-box-shadow:    inset 0 0 10px #bbb;
+   -webkit-box-shadow: inset 0 0 10px #bbb;
+   box-shadow:         inset 0 0 10px #bbb;
+		}
+	</style>
+</head>
+<body>
+	<div style="float:left;width:49%;height:40px">
+		<button id="leftcopybtn" style="vertical-align:top;">COPY</button>
+        <div id='itemCount' style="float:right;margin-top:5px;"></div>
+	</div>
+	<div style="float:right;width:49%;height:40px">
+		<button id="copybtn" style="vertical-align:top;">COPY</button>
+		<button id="togglebtn" style="vertical-align:top;">TOGGLE QUOTES</button>
+		<button id="toggleInBracketsBtn" style="vertical-align:top;">TOGGLE IN()</button>
+        <label style="float:right"><input type="checkbox" id="trimSpecialCharacters"/>Trim special characters</label>
+	</div>
+	<div style="float:left;width:49%;">
+		<textarea id='tarea' placeholder="Paste excel column here..." autofocus></textarea>
+	</div>
+	<div style="float:right;width:49%;">
+		<textarea id='result' placeholder="Example: IN ('foo','bar') or paste IN statement..."></textarea>
+	</div>
+	<div style="clear:both"></div>
+	<input type='hidden' id='type' value='digits'/>
+    <input type='hidden' id='inBrackets' value='yes'/>
+    <script>  
+        createCopyButtonEvent();
+        createLeftCopyButtonEvent();
+        createToggleQuotesButtonEvent();
+        createTrimSpecialCharactersEvent();
+        createToggleInBracketsButtonEvent();
+        
+        tarea = document.getElementById('tarea');
+        tarea.addEventListener("paste", function(){
+            setTimeout(function() {
+                createModifiedString();
+            }, 100);
+        });
+        
+        tareaResult = document.getElementById('result');
+        tareaResult.addEventListener("paste", function(){
+            setTimeout(function() {
+                createColumnString();
+            }, 100);
+        });
+        
+        
+        function createModifiedString(type){
+            resultString = '';
+            type = type || 'none';
+            tareaValue = document.getElementById('tarea').value;
+            resultDiv = document.getElementById('result');
+            tareaArray = tareaValue.split('\n');
+            document.getElementById('itemCount').innerHTML = "Count: " + tareaArray.length;   
+            if(type == 'none'){
+                type = getInputType(tareaArray[0]);
+            }
+            document.getElementById('type').value = type;
+            if(inBrackets()) resultString = 'IN (\n';
+            for(i = 0; i < tareaArray.length; i++){
+                tareaArray[i] = tareaArray[i].trim();
+                if(tareaArray[i] == '') continue;
+                if(trimSpecialCharacters()){
+                    tareaArray[i] = tareaArray[i].replace(/^\W+/g,"");
+                    tareaArray[i] = tareaArray[i].replace(/\W+$/g,"");
+                }
+                if(type == 'digits'){
+                    resultString += (tareaArray[i] + ',');
+                } else {
+                    resultString += ('\'' + tareaArray[i] + '\'' + ',');
+                }
+            }
+            resultString = resultString.slice(0, -1);
+            if(inBrackets()) resultString += '\n)';
+            resultDiv.value = resultString;
+        }
+        
+        function createColumnString(){
+            columnString = '';
+            tareaValue = document.getElementById('tarea');
+            resultDiv = document.getElementById('result').value;
+            if(resultDiv.indexOf(',') === -1) return false;
+            resultDiv = resultDiv.trim();
+            resultDiv = resultDiv.replace(/^IN.*\(/,"");
+            resultDiv = resultDiv.replace(/\)$/,"");
+            resultArray = resultDiv.split(',');
+            document.getElementById('itemCount').innerHTML = "Count: " + resultArray.length;
+            for(i = 0; i < resultArray.length; i++){
+                resultArray[i] = resultArray[i].trim();
+                resultArray[i] = resultArray[i].replace(/^\'/,"");
+                resultArray[i] = resultArray[i].replace(/\'$/,"");
+                columnString += (resultArray[i] + '\n');
+            }
+            columnString = columnString.replace(/\n$/,"");
+            tareaValue.value = columnString;
+        }
+        
+        function createToggleQuotesButtonEvent(){
+            var togglebtn = document.querySelector('#togglebtn');
+            togglebtn.addEventListener('click', function(event) {
+                newType = document.getElementById('type').value == 'digits' ? 'string' : 'digits';
+                createModifiedString(newType);
+            });
+        }
+        
+        function createTrimSpecialCharactersEvent(){
+            var toggleCheckbox = document.querySelector('#trimSpecialCharacters');
+            toggleCheckbox.addEventListener('click', function(event) {
+                createModifiedString();
+            });
+        }
+        
+        function createToggleInBracketsButtonEvent(){
+            var togglebtn = document.querySelector('#toggleInBracketsBtn');
+            togglebtn.addEventListener('click', function(event) {
+                var inBrackets = document.getElementById('inBrackets').value;
+                document.getElementById('inBrackets').value = (inBrackets == 'yes') ? 'no' : 'yes';
+                createModifiedString();
+            });
+        }
+        
+        function createCopyButtonEvent(){
+            var copyTextareaBtn = document.querySelector('#copybtn');
+            copyTextareaBtn.addEventListener('click', function(event) {
+              var copyTextarea = document.querySelector('#result');
+              copyTextarea.select();
+              try {
+                var successful = document.execCommand('copy');
+                if(successful){
+                    copyTextareaBtn.innerHTML = 'Copied !';
+                    setTimeout(function(){
+                        copyTextareaBtn.innerHTML = 'COPY';
+                    }, 2000);
+                }
+                console.log('Copying text command');
+              } catch (err) {
+                console.log('Oops, unable to copy');
+              }
+            });
+        }
+        
+        function createLeftCopyButtonEvent(){
+            var copyTextareaBtn = document.querySelector('#leftcopybtn');
+            copyTextareaBtn.addEventListener('click', function(event) {
+              var copyTextarea = document.querySelector('#tarea');
+              copyTextarea.select();
+              try {
+                var successful = document.execCommand('copy');
+                if(successful){
+                    copyTextareaBtn.innerHTML = 'Copied !';
+                    setTimeout(function(){
+                        copyTextareaBtn.innerHTML = 'COPY';
+                    }, 2000);
+                }
+                console.log('Copying text command');
+              } catch (err) {
+                console.log('Oops, unable to copy');
+              }
+            });
+        }
+        
+        function getInputType(input){
+            return /^\d+$/.test(input) ? 'digits' : 'string';
+        }
+        
+        function trimSpecialCharacters(){
+            return document.getElementById("trimSpecialCharacters").checked;
+        }
+        
+        function inBrackets(){
+            return document.getElementById('inBrackets').value == 'yes' ? true : false;
+        }
+        
+    </script>
+</body>
+</html>
