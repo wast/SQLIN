@@ -16,7 +16,7 @@
 			border:0;
 			border-radius:3px;
 			cursor:pointer;
-			FONT-WEIGHT:700;
+			font-weight:700;
 			font-size:11px;
 		}
 		button:hover {
@@ -50,6 +50,7 @@
 <body>
 	<div style="float:left;width:49%;height:40px">
 		<button id="leftcopybtn" style="vertical-align:top;">COPY</button>
+        <button id="sortBtn" style="vertical-align:top;">SORT</button>
         <div id='itemCount' style="float:right;margin-top:5px;"></div>
 	</div>
 	<div style="float:right;width:49%;height:40px">
@@ -65,7 +66,7 @@
 		<textarea id='result' placeholder="Example: IN ('foo','bar') or paste IN statement..."></textarea>
 	</div>
 	<div style="clear:both"></div>
-    <a style="float:right;color:gray" href="mailto:s.majdak@vipnet.hr">Feedback</a>
+    <div style="float:left;color:gray">SQL (IN) tool currently in pre-alpha development.<br />Try to enter/paste some data and see what happens. :)</div>
 	<input type='hidden' id='type' value='digits'/>
     <input type='hidden' id='inBrackets' value='yes'/>
     <script src="s.js"></script>
