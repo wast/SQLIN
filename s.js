@@ -1,32 +1,43 @@
 "use strict";
 
-createCopyResultButtonEvent();
+const tarea = document.getElementById('tarea');
+const resultTextarea = document.getElementById('result');
+let eventType = '';
+let doSort = false;
+let sortAsc;
+
+createSortButtonEvent();
 createCopySourceButtonEvent();
+createCopyResultButtonEvent();
 createToggleQuotesButtonEvent();
 createTrimSpecialCharactersEvent();
 createToggleInBracketsButtonEvent();
 createListenerCreateColumngStringDelayed();
 createListenerCreateModifiedStringDelayed();
 
-let eventType = '';
-
 function createModifiedString(type){
-    let itemCount = 0;
-    let resultString = '';
     type = type || 'none';
-    const tareaValue = document.getElementById('tarea').value;
-    let resultTextarea = document.getElementById('result');
+    const startTime = new Date().getTime();
+    let resultString = '';
+    const tareaValue = tarea.value;
     let tareaArray = tareaValue.split('\n'); 
+    tareaArray = tareaArray.filter(String);
     tareaArray = [...new Set(tareaArray)];
     if(type == 'none'){
         type = getInputType(tareaArray[0]);
+    }
+    if(doSort){
+        const compareFunctionPlain = type === 'string' ? compareStringsPlain : compareNumbersPlain;
+        const compareFunction = type === 'string' ? compareStrings : compareNumbers;
+        if(typeof sortAsc !== "boolean") sortAsc = compareFunctionPlain(tareaArray[0], tareaArray[1]) > 0 ? true : false;
+        tareaArray.sort(compareFunction);
+        tarea.value = tareaArray.join("\n");
+        doSort = false;
     }
     document.getElementById('type').value = type;
     if(inBrackets()) resultString = 'IN (\n';
     for(let i = 0; i < tareaArray.length; i++){
         tareaArray[i] = tareaArray[i].trim();
-        if(tareaArray[i] == '') continue;
-        itemCount++;
         if(trimSpecialCharacters()){
             tareaArray[i] = tareaArray[i].replace(/^\W+/g,"");
             tareaArray[i] = tareaArray[i].replace(/\W+$/g,"");
@@ -40,26 +51,14 @@ function createModifiedString(type){
     resultString = resultString.slice(0, -1);
     if(inBrackets()) resultString += '\n)';
     resultTextarea.value = resultString;
-    document.getElementById('itemCount').innerHTML = "Count: " + itemCount;  
+    document.getElementById('itemCount').innerHTML = "Count: " + tareaArray.length;  
     if(eventType === 'paste') resultTextarea.select();
-}
-
-function createModifiedStringDelayed(){
-    setTimeout(function() {
-        createModifiedString();
-    }, 100);
-}
-
-function createColumnStringDelayed(){
-    setTimeout(function() {
-        createColumnString();
-    }, 100);
+    console.log((new Date().getTime() - startTime) + " msec");
 }
 
 function createColumnString(){
     let columnString = '';
-    const tarea = document.getElementById('tarea');
-    let resultDiv = document.getElementById('result').value;
+    let resultDiv = resultTextarea.value;
     if(resultDiv.indexOf(',') === -1) return false;
     resultDiv = resultDiv.trim();
     resultDiv = resultDiv.replace(/^IN.*\(/,"");
@@ -77,6 +76,27 @@ function createColumnString(){
     tarea.select();
 }
 
+function createModifiedStringDelayed(){
+    setTimeout(function() {
+        createModifiedString();
+    }, 100);
+}
+
+function createColumnStringDelayed(){
+    setTimeout(function() {
+        createColumnString();
+    }, 100);
+}
+
+function createSortButtonEvent(){
+    const sortBtn = document.getElementById('sortBtn');
+    sortBtn.addEventListener('click', function(){
+        doSort = true;
+        if(typeof sortAsc === "boolean") sortAsc = sortAsc ? false : true;
+        createModifiedString();
+    });
+}
+
 function createCopyResultButtonEvent(){
     createCopyEventOnButton('#result','#copybtn');
 }
@@ -85,7 +105,7 @@ function createCopySourceButtonEvent(){
 }
 
 function createToggleQuotesButtonEvent(){
-    let togglebtn = document.querySelector('#togglebtn');
+    const togglebtn = document.getElementById('togglebtn');
     togglebtn.addEventListener('click', function() {
         const newType = document.getElementById('type').value == 'digits' ? 'string' : 'digits';
         createModifiedString(newType);
@@ -93,14 +113,14 @@ function createToggleQuotesButtonEvent(){
 }
 
 function createTrimSpecialCharactersEvent(){
-    let toggleCheckbox = document.querySelector('#trimSpecialCharacters');
+    const toggleCheckbox = document.getElementById('trimSpecialCharacters');
     toggleCheckbox.addEventListener('click', function() {
         createModifiedString();
     });
 }
 
 function createToggleInBracketsButtonEvent(){
-    let togglebtn = document.querySelector('#toggleInBracketsBtn');
+    const togglebtn = document.getElementById('toggleInBracketsBtn');
     togglebtn.addEventListener('click', function() {
         let inBrackets = document.getElementById('inBrackets').value;
         document.getElementById('inBrackets').value = (inBrackets == 'yes') ? 'no' : 'yes';
@@ -127,7 +147,6 @@ function createListenerCreateColumngStringDelayed(){
 }
 
 function createListenerCreateModifiedStringDelayed(){
-    const tarea = document.getElementById('tarea');
     tarea.addEventListener("paste", function(e){
         eventType = e.type;
         createModifiedStringDelayed();
@@ -155,6 +174,38 @@ function doCopy(copyTextarea,copyTextareaBtn){
         console.log('Oops, unable to copy');
         alert('Oops, unable to copy');
     }
+}
+
+function compareStrings(a, b) {
+    a = a.toUpperCase();
+    b = b.toUpperCase();
+    if (a < b) {
+        return sortAsc ? 1 : -1;
+    }
+    if (a > b) {
+        return sortAsc ? -1 : 1;
+    }
+    return 0;
+}
+
+function compareStringsPlain(a, b) {
+    a = a.toUpperCase();
+    b = b.toUpperCase();
+    if (a < b) {
+        return  1;
+    }
+    if (a > b) {
+        return -1;
+    }
+    return 0;
+}
+
+function compareNumbers(a, b) {
+    return sortAsc ? b - a : a - b;
+}
+
+function compareNumbersPlain(a, b) {
+    return b - a;
 }
 
 function getInputType(input){
