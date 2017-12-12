@@ -2,33 +2,45 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>SQLIN</title>
+    <title>ColTran</title>
 	<style>
-		body, html {
-			padding:15px;
-			margin:0;
-		}
-		
+		body {
+			padding:10px;
+            font-family:consolas;
+            font-size:14px;
+		}	
 		button {
+            font-family:consolas;
+            display:block;
 			background-color:#1565c0;
-			padding:8px 20px 8px 20px;
+            width: 160px;
+			padding:6px 14px;
+            margin:4px 4px 4px 0px;
+            vertical-align:top;
 			color:white;
 			border:0;
 			border-radius:3px;
 			cursor:pointer;
 			font-weight:700;
-			font-size:11px;
+			font-size:14px;
 		}
-		button:hover {
+        button:hover {
 			background-color:#1976d2;
 		}
+        button.copy {
+            background-color:#279e64;
+            padding:8px 20px;
+        }
+        button.copy:hover {
+            background-color:#2eba76;
+        }
 		textarea {
+            width:98%;
+            resize: vertical;
 			border: 1px solid #bbb;
 			border-radius:3px;
 			padding:1%;
-			width:98%;
-			height:450px;
-			background:#fefefe;
+			height:500px;
 			-moz-box-shadow:    inset 0 0 10px #bbb;
             -webkit-box-shadow: inset 0 0 10px #bbb;
             box-shadow:         inset 0 0 10px #bbb;
@@ -45,30 +57,107 @@
         textarea:-ms-input-placeholder {
             font-size: 22px;
         }
+        #modeKeyDiv, #likePercentDiv {
+            margin:8px 0px;
+            display:none;
+        }
+        #itemCount {
+            position:relative;
+            float:right;
+            margin-top:14px;
+            grid-area: count;
+        }
+        
+        * {box-sizing: border-box;}
+        .wrapper {
+          max-width: 1280px;
+          margin: 0 auto;
+          display: grid;
+          grid-template-columns: repeat(7, 1fr);
+          grid-template-areas: 
+              "btn1 . count btn2 . . ."
+              "ta1 ta1 ta1 ta2 ta2 ta2 btns"
+              "ftr ftr ftr ftr . . .";
+          grid-gap: 6px;
+          grid-auto-rows: minmax(26px, auto);
+        }
+        
+        @media screen and (max-width: 500px) {
+            .wrapper {
+                grid-template-areas: "btn1"
+                                     "count"
+                                     "ta1"
+                                     "btn2"
+                                     "ta2"
+                                     "btns"
+                                     "ftr";
+                grid-template-columns: 100%;
+            }
+        }
+        
+        #btn1Div {
+          grid-area: btn1
+        }
+        #btn2Div { 
+          grid-area: btn2
+        }
+        #tareaDiv {
+          grid-area: ta1
+        }
+        #resultDiv {
+          grid-area: ta2
+        }
+        #options {
+          grid-area: btns;
+        }
+        footer {
+          grid-area: ftr
+        }
 	</style>
 </head>
 <body>
-	<div style="float:left;width:49%;height:40px">
-		<button id="leftcopybtn" style="vertical-align:top;">COPY</button>
-        <button id="sortBtn" style="vertical-align:top;">SORT</button>
-        <div id='itemCount' style="float:right;margin-top:5px;"></div>
-	</div>
-	<div style="float:right;width:49%;height:40px">
-		<button id="copybtn" style="vertical-align:top;">COPY</button>
-		<button id="togglebtn" style="vertical-align:top;">TOGGLE QUOTES</button>
-		<button id="toggleInBracketsBtn" style="vertical-align:top;">TOGGLE IN()</button>
-        <label style="float:right"><input type="checkbox" id="trimSpecialCharacters"/>Trim special characters</label>
-	</div>
-	<div style="float:left;width:49%;">
-		<textarea id='tarea' placeholder="Paste excel column here..." autofocus></textarea>
-	</div>
-	<div style="float:right;width:49%;">
-		<textarea id='result' placeholder="Example: IN ('foo','bar') or paste IN statement..."></textarea>
-	</div>
-	<div style="clear:both"></div>
-    <div style="float:left;color:gray">SQL (IN) tool currently in pre-alpha development.<br />Try to enter/paste some data and see what happens. :)</div>
-	<input type='hidden' id='type' value='digits'/>
-    <input type='hidden' id='inBrackets' value='yes'/>
-    <script src="s.js"></script>
+    <div class="wrapper">
+        <div id='btn1Div'>
+            <button id="leftcopybtn" class="copy">COPY</button>
+        </div>
+        <div id='itemCount'>
+        </div>
+        <div id='btn2Div'>
+            <button id="copybtn" class="copy">COPY</button>
+        </div>
+        <div id='tareaDiv'>
+            <textarea id='tarea' placeholder="Paste excel column here..." autofocus></textarea>
+        </div>
+        <div id='resultDiv'>
+            <textarea id='result' placeholder="Example: IN ('foo','bar') or paste IN statement..."></textarea>
+        </div>
+        <div id="options">
+            <div>
+                Mode: 
+                <select id="mode">
+                    <option value="in">IN</option>
+                    <option value="or">OR</option>
+                    <option value="like">LIKE</option>
+                    <option value="pipe">PIPE</option>
+                </select>
+            </div>
+            <div id="modeKeyDiv">
+                Key: <input id="modeKey" type="text" value='Id'/>
+            </div>
+            <div id="likePercentDiv">
+                LIKE type: <select id="likePercent">
+                    <option value="right">'value%'</option>
+                    <option value="both">'%value%'</option>
+                    <option value="left">'%value'</option>
+                </select>
+            </div>
+            <button id="doMultiline"/>Multiline</button>
+            <button id="trimSpecialCharacters"/>Trim special characters</button>
+            <button id="toggleQuotesBtn">Quotes</button>
+            <button id="sortBtn">Sort</button> 
+            <button id="toggleInBracketsBtn">IN ( )</button>      
+        </div>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>
